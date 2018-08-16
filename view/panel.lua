@@ -23,6 +23,14 @@ local function draw(self)
     end
 end
 
+local function setBackgroundColor(self, r, g, b, a)
+    self.backgroundColor = Color(r,g,b,a)
+end
+
+local function setBoundsColor(self, r, g, b, a)
+    self.boundsColor = Color(r,g,b,a)
+end
+
 local function Panel(x, y, w, h)
     local panel = Node(x, y)
 
@@ -36,6 +44,8 @@ local function Panel(x, y, w, h)
     panel.areBoundsVisible = true
     panel.boundsColor = Color(0,0,0,1)
     panel.draw = draw
+    panel.setBackgroundColor = setBackgroundColor
+    panel.setBoundsColor = setBoundsColor
 
     return panel
 end
