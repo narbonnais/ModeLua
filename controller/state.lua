@@ -1,12 +1,13 @@
-local function onEnter(params)
+local function onEnter(self, params)
 end
 
-local function onExit(params)
+local function onExit(self, params)
 end
 
-local function State()
+local function State(controller)
     local state = {}
 
+    state.controller = controller
     state.onEnter = onEnter
     state.onExit = onExit
 

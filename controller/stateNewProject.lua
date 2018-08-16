@@ -1,11 +1,13 @@
 local State = require 'controller.state'
 
-local function onEnter(params)
-
+local function onEnter(self, params)
+    local c = self.controller
+    c.newProjectPanel.visible = true
 end
 
-local function onExit(params)
-
+local function onExit(self, params)
+    local c = self.controller
+    c.newProjectPanel.visible = false
 end
 
 local function StateNewProject(controller)

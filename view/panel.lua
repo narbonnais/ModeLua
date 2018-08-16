@@ -14,11 +14,11 @@ local function draw(self)
     love.graphics.rectangle('fill', x, y, w, h)
 
     -- draw children
+    love.graphics.setColor(self.boundsColor)
     self:drawChildren()
 
     -- draw bounds
     if self.boundsVisible == true then
-        love.graphics.setColor(self.boundsColor)
         love.graphics.rectangle('line', x, y, w, h)
     end
 end

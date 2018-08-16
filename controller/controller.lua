@@ -8,6 +8,7 @@ local Transition = require 'controller.transition'
 local Node = require 'view.node'
 local Panel = require 'view.panel'
 local Button = require 'view.button'
+local Label = require 'view.label'
 -- utils
 local Callback = require 'utils.callback'
 
@@ -65,14 +66,21 @@ local function Controller()
     c.transitions = {
         Transition(EStates.initial, EEvents.newproject, EStates.newproject),
         Transition(EStates.newproject, EEvents.backgroundclicked, EStates.initial),
+        Transition(EStates.newproject, EEvents.newproject, EStates.initial),
     }
 
     -- ui
     c.rootNode = Node(0,0)
     c.menuPanel = Panel(0, 0, SCREEN_W, 60)
-    c.newButton = Button(10, 10, 40, 40, Callback(c, function(self) self:doTransition(EEvents.newproject) end, nil))
-    c.menuPanel:append(c.newButton)
+    c.newProjectButton = Button(10, 10, 40, 40, Callback(c, function(self) self:doTransition(EEvents.newproject) end, nil))
+    local newProjectLabel = Label(0, 0, "NewProject")
+    c.newProjectButton:append(newProjectLabel)
+    c.menuPanel:append(c.newProjectButton)
     c.rootNode:append(c.menuPanel)
+
+    c.newProjectPanel = Panel(SCREEN_W / 4, SCREEN_H / 4, SCREEN_W / 2, SCREEN_H / 2)
+    c.newProjectPanel.visible = false
+    c.rootNode:append(c.newProjectPanel)
 
     return c
 end

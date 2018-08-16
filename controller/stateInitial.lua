@@ -1,11 +1,11 @@
 local State = require 'controller.state'
 
-local function onEnter(params)
-
+local function onEnter(self, params)
+    local c = self.controller
 end
 
-local function onExit(params)
-
+local function onExit(self, params)
+    local c = self.controller
 end
 
 local function StateInitial(controller)
