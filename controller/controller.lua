@@ -9,6 +9,7 @@ local Node = require 'view.node'
 local Panel = require 'view.panel'
 local Button = require 'view.button'
 local Label = require 'view.label'
+local Textfield = require 'view.textfield'
 -- utils
 local Callback = require 'utils.callback'
 
@@ -78,8 +79,19 @@ local function Controller()
     c.menuPanel:append(c.newProjectButton)
     c.rootNode:append(c.menuPanel)
 
-    c.newProjectPanel = Panel(SCREEN_W / 4, SCREEN_H / 4, SCREEN_W / 2, SCREEN_H / 2)
+    local newProjectPanelW = SCREEN_W / 2
+    local newProjectPanelH = SCREEN_H / 2
+    local newProjectPanelX = (SCREEN_W - newProjectPanelW) / 2
+    local newProjectPanelY = (SCREEN_H - newProjectPanelH) / 2
+    c.newProjectPanel = Panel(newProjectPanelX, newProjectPanelY, newProjectPanelW, newProjectPanelH)
     c.newProjectPanel.visible = false
+    local projectNameTextfieldW = newProjectPanelW / 3
+    local projectNameTextfieldH = 30
+    local projectNameTextfieldX = (newProjectPanelW - projectNameTextfieldW) / 2
+    local projectNameTextfieldY = 20
+    c.projectNameTextfield = Textfield(projectNameTextfieldX, projectNameTextfieldY, projectNameTextfieldW, projectNameTextfieldH)
+    c.projectNameTextfield.placeholder = "Enter project name"
+    c.newProjectPanel:append(c.projectNameTextfield)
     c.rootNode:append(c.newProjectPanel)
 
     return c
