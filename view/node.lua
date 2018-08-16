@@ -39,21 +39,21 @@ local function removeChild(self, node)
 end
 
 local function update(self, dt)
-    updateChilds(dt)
+    self:updateChildren(dt)
 end
 
-local function updateChilds(self, dt)
+local function updateChildren(self, dt)
     for local i = #self.children, 1, -1 do
         self.children[i]:update(dt)
     end
 end
 
 local function draw(self, dt)
-
+    self:drawChildren()
 end
 
-local function drawChilds(self, dt)
-    for local i = #self.children, 1, -1 do
+local function drawChildren(self, dt)
+    for local i = 1, #self.children do
         self.children[i]:draw(dt)
     end
 end
@@ -78,6 +78,14 @@ local function Node(x, y)
     node.append = append
     node.setParent = setParent
     node.removeChild = node.removeChild
+
+    -- update
+    node.update = update
+    node.updateChildren = updateChildren
+
+    -- draw
+    node.draw = draw
+    node.drawChildren = drawChildren
 
     return node
 end
