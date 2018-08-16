@@ -39,3 +39,5 @@ local function Panel(x, y, w, h)
 
     return panel
 end
+
+return Panel
