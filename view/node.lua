@@ -1,8 +1,8 @@
-local UID = require 'src.utils.uid'
+local UID = require 'utils.uid'
 
 local function append(self, node)
     -- check if self owns the node
-    for local i = 1, #self.children do
+    for i = 1, #self.children do
         local child = self.children[i]
 
         if child.uid == node.uid then
@@ -26,7 +26,7 @@ local function setParent(self, parent)
 end
 
 local function removeChild(self, node)
-    for local i = #self.children, 1, -1 do
+    for i = #self.children, 1, -1 do
         local child = self.children[i]
         if child.uid == node.uid then
             table.remove(self.children, i)
@@ -43,7 +43,7 @@ local function update(self, dt)
 end
 
 local function updateChildren(self, dt)
-    for local i = #self.children, 1, -1 do
+    for i = #self.children, 1, -1 do
         self.children[i]:update(dt)
     end
 end
@@ -53,7 +53,7 @@ local function draw(self, dt)
 end
 
 local function drawChildren(self, dt)
-    for local i = 1, #self.children do
+    for i = 1, #self.children do
         self.children[i]:draw(dt)
     end
 end
@@ -74,7 +74,7 @@ local function Node(x, y)
 
     -- relationships
     node.children = {}
-    node.parent
+    node.parent = nil
     node.append = append
     node.setParent = setParent
     node.removeChild = node.removeChild

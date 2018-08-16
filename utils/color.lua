@@ -6,3 +6,5 @@ local function Color(pr, pg, pb, pa)
     local color = {r, g, b, a}
     return color
 end
+
+return Color

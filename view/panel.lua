@@ -1,5 +1,5 @@
-local Node = require 'src.view.node'
-local Color = require 'src.utils.color'
+local Node = require 'view.node'
+local Color = require 'utils.color'
 
 local function draw(self)
     if self.isVisible == false then return end
