@@ -58,6 +58,21 @@ local function drawChildren(self, dt)
     end
 end
 
+-- boolean onClick(self, x, y) perform action if component is clicked
+-- and returns true, false if no component was clicked
+local function onClick(self, x, y)
+    local childrenClicked = self:onChildrenClick(x, y)
+    return childrenClicked
+end
+
+local function onChildrenClick(self, x, y)
+    for i = 1, #self.children do
+        local clicked = self.children[i]:onClick(x, y)
+        if clicked then return true end
+    end
+    return false
+end
+
 local function Node(x, y)
     local node = {}
 
@@ -86,6 +101,10 @@ local function Node(x, y)
     -- draw
     node.draw = draw
     node.drawChildren = drawChildren
+
+    -- action
+    node.onClick = onClick
+    node.onChildrenClick = onChildrenClick
 
     return node
 end

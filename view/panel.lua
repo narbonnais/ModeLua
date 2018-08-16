@@ -2,7 +2,7 @@ local Node = require 'view.node'
 local Color = require 'utils.color'
 
 local function draw(self)
-    if self.isVisible == false then return end
+    if self.visible == false then return end
 
     local x = self.X
     local y = self.Y
@@ -17,7 +17,7 @@ local function draw(self)
     self:drawChildren()
 
     -- draw bounds
-    if self.areBoundsVisible == true then
+    if self.boundsVisible == true then
         love.graphics.setColor(self.boundsColor)
         love.graphics.rectangle('line', x, y, w, h)
     end
@@ -31,6 +31,25 @@ local function setBoundsColor(self, r, g, b, a)
     self.boundsColor = Color(r,g,b,a)
 end
 
+local function hovered(self, x, y)
+    return not (x < self.X or x > self.X + self.w or y < self.Y or y > self.Y + self.h)
+end
+
+local function onClick(self, x, y)
+    if self.visible == false then return false end
+
+    local clicked = self:hovered(x, y)
+    if clicked then
+        -- watch children only if panel was clicked (they should be inside panel)
+        local childrenClicked = self:onChildrenClick(x, y)
+
+        -- panel was clicked
+        return true
+    end
+    -- panel wasn't clicked
+    return false
+end
+
 local function Panel(x, y, w, h)
     local panel = Node(x, y)
 
@@ -39,14 +58,17 @@ local function Panel(x, y, w, h)
     panel.h = h
 
     -- display
-    panel.isVisible = true
+    panel.visible = true
     panel.backgroundColor = Color(1,1,1,1)
-    panel.areBoundsVisible = true
+    panel.boundsVisible = true
     panel.boundsColor = Color(0,0,0,1)
     panel.draw = draw
     panel.setBackgroundColor = setBackgroundColor
     panel.setBoundsColor = setBoundsColor
 
+    -- action
+    panel.hovered = hovered
+    panel.onClick = onClick
     return panel
 end
 
