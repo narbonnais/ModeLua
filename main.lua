@@ -1,19 +1,15 @@
-local mainFont = love.graphics.newFont("Pyxel.ttf", 20)
-love.graphics.setFont(mainFont)
-love.graphics.setDefaultFilter("nearest")
-
-local gui = require("gui")
-
-local uid = 0
-local function UID()
-    uid = uid + 1
-    return uid
-end
-
-lstClasses = {}
-
+local gui = require("src.gui")
+local writer = require("src.writer")
+local generator = require("src.generator")
 local screenw = love.graphics.getWidth()
 local screenh = love.graphics.getHeight()
+
+
+local uid = 0
+local function UID() uid = uid + 1; return uid end
+
+local lstClasses = {}
+
 
 function gui.Class(pX, pY, pClassName, uid)
     local class = gui.Group(pX, pY)
@@ -137,124 +133,18 @@ local function createClass(pState)
     table.insert(lstClasses, class)
 end
 
-local function firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
-end
-
-local writer = {}
-writer.file = nil
-writer.indents = 0
-function writer:indent()
-    self.indents = self.indents + 1
-end
-function writer:outdent()
-    self.indents = self.indents - 1
-    if self.indents < 0 then
-        self.indents = 0
+function generateBtnCallback(pState)
+    if pState == "begin" then
+        generator.generateCode(lstClasses)
     end
-end
-function writer:open(pFilename)
-    if self.file ~= nil then
-        self.file:close()
-        self.file = nil
-    end
-    self.file = io.open(pFilename, "w")
-end
-function writer:line(pLine)
-    local line = ""
-    for i = 0, self.indents - 1 do
-        line = line .. "\t"
-    end
-    line = line .. pLine
-    line = line .. "\n"
-    if self.file ~= nil then
-        self.file:write(line)
-    end
-end
-function writer:close()
-    if self.file ~= nil then
-        self.file:close()
-        self.file = nil
-    end
-end
-
-local function generateArgs(pLstArgs)
-    local args = ""
-    for i = 1, #pLstArgs do
-        local arg = pLstArgs[i]
-        args = args .. " " .. arg
-        if i < #pLstArgs then
-            args = args .. ","
-        end
-    end
-    return args
-end
-
-local function removeFiles()
-    os.execute("Del " .. "gen\\*")
-    print("O")
-    print("\n")
-end
-
-local function generateCode(pState)
-    if pState ~= "begin" then return end
-
-    removeFiles()
-
-    for _, class in pairs(lstClasses) do
-        local classname = class.titleLabel.text
-        local filename = "gen/" .. classname .. ".lua"
-        -- open file
-        writer:open(filename)
-        -- write content
-        writer:line("-- private attributes")
-        for i = 1, #class.lstPrivateMember do
-            local member = class.lstPrivateMember[i]
-            writer:line("local " .. member)
-        end
-        writer:line("")
-        writer:line("-- private methods")
-        for i = 1, #class.lstPrivateMethod do
-            local methodname = class.lstPrivateMethod[i]
-            local methodargs = {} -- TODO: give this function arguments
-            local args = generateArgs(methodargs)
-            writer:line("local function " .. methodname .. "(" .. args .. ")")
-            writer:line("end")
-        end
-        writer:line("")
-        local args = generateArgs(class.lstArgs)
-        writer:line("local function " .. firstToUpper(classname) .. "(" .. args .. ")")
-        writer:indent()
-        writer:line("local " .. classname .. " = {}") -- TODO: if parent == nil then {} else parentclassname
-        writer:line("")
-        writer:line("-- public attributes")
-        for i = 1, #class.lstPublicMember do
-            local member = class.lstPublicMember[i]
-            writer:line(classname .. "." .. member)
-        end
-        writer:line("")
-        writer:line("-- public methods")
-        for i = 1, #class.lstPublicMethod do
-            local methodname = class.lstPublicMethod[i]
-            local methodargs = {} -- TODO: give this function arguments
-            local args = generateArgs(methodargs)
-            writer:line("function " .. classname .. ":" .. methodname .. "(" .. args .. ")")
-            writer:line("end")
-        end
-        writer:line("")
-        writer:line("return " .. classname)
-        writer:outdent()
-        writer:line("end")
-        writer:line("")
-        writer:line("return " .. firstToUpper(classname))
-        -- close file
-        writer:close()
-    end
-
-    print("Code generated")
 end
 
 function love.load()
+    love.graphics.setDefaultFilter("nearest")
+
+    local mainFont = love.graphics.newFont("assets/Pyxel.ttf", 20)
+    love.graphics.setFont(mainFont)
+
     local sideRect = gui.Rectangle(0, 0, 150, screenh)
     local menuLabel = gui.Label(0, 0, 150, 50, "Menu bar")
     local addClassBtn = gui.Button(20, 50, 110, 70, "Add class")
@@ -274,5 +164,4 @@ end
 
 function love.draw()
     gui:draw()
-    love.graphics.setFont(mainFont)
 end
