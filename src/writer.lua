@@ -17,7 +17,7 @@ function writer:open(pFilename)
         self.file:close()
         self.file = nil
     end
-    self.file = io.open(pFilename, "w")
+    self.file = io.open(pFilename, "w+")
 end
 function writer:line(pLine)
     local line = ""
