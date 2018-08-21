@@ -191,29 +191,15 @@ local function generateArgs(pLstArgs)
 end
 
 local function removeFiles()
-    local lfs = require "lfs";
- 
-    local doc_dir = system.DocumentsDirectory .. "/gen";
-    local doc_path = system.pathForFile("", doc_dir);
-    local resultOK, errorMsg;
-    
-    for file in lfs.dir(doc_path) do
-        local theFile = system.pathForFile(file, doc_dir);
-    
-        if (lfs.attributes(theFile, "mode") ~= "directory") then
-            resultOK, errorMsg = os.remove(theFile);
-    
-            if (resultOK) then
-                print(file.." removed");
-            else
-                print("Error removing file: "..file..":"..errorMsg);
-            end
-        end
-    end 
+    os.execute("Del " .. "gen\\*")
+    print("O")
+    print("\n")
 end
 
 local function generateCode(pState)
     if pState ~= "begin" then return end
+
+    removeFiles()
 
     for _, class in pairs(lstClasses) do
         local classname = class.titleLabel.text
