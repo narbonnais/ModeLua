@@ -8,6 +8,8 @@ local function FNode(pX, pY)
         self.y = pY
     end
 
+    node.visible = true
+
     return node
 end
 

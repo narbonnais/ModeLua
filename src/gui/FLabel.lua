@@ -25,6 +25,7 @@ function FLabel(pX, pY, pW, pH, pText)
     label.showBorders = false
     label.showBackground = false
     function label:draw()
+        if not self.visible then return end 
         self:drawRectangle()
         self:drawLabel()
     end

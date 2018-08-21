@@ -18,15 +18,18 @@ local function FRectangle(pX, pY, pW, pH)
     end
 
     rectangle.showBorders = true
-    rectangle.showBackground = false
+    rectangle.showBackground = true
     rectangle.rx = 2
     rectangle.ry = 2
     function rectangle:drawRectangle()
+        if not self.visible then return end
         love.graphics.push()
         if self.showBackground then
+            love.graphics.setColor(0,0,0)
             love.graphics.rectangle("fill", self.x, self.y, self.w, self.h, self.rx, self.ry)
         end
         if self.showBorders then
+            love.graphics.setColor(1,1,1)
             love.graphics.rectangle("line", self.x, self.y, self.w, self.h, self.rx, self.ry)
         end
         love.graphics.pop()

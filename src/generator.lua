@@ -3,7 +3,11 @@ local writer = require("src.writer")
 local generator = {}
 
 local function firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
+    return str:sub(1,1):upper()..str:sub(2)
+end
+
+local function firstToLower(str)
+    return str:sub(1,1):lower()..str:sub(2)
 end
 
 function generator.generateArgs(pLstArgs)
@@ -22,21 +26,22 @@ function generator.generateCode(lstClasses)
     print("generating code")
     -- TODO: give choice between singleton, factory, and enum
     for _, class in pairs(lstClasses) do
-        local classname = "F" .. firstToUpper(class.name)
-        local filename = "gen/" .. classname .. ".lua"
+        local upperClassname = firstToUpper(class.name)
+        local lowerClassname = firstToLower(class.name)
+        local Fname = "F" .. upperClassname
+        local filename = "gen/" .. Fname .. ".lua"
         -- open file
         writer:open(filename)
         -- write content
-        writer:line("")
         local args = generator.generateArgs(class.lstArgs)
-        writer:line("local function " .. classname .. "(" .. args .. ")")
+        writer:line("local function " .. Fname .. "(" .. args .. ")")
         writer:indent()
-        writer:line("local " .. class.name .. " = {}") -- TODO: if parent == nil then {} else parentclassname
+        writer:line("local " .. lowerClassname .. " = {}") -- TODO: if parent == nil then {} else parentclassname
         writer:line("")
         writer:line("-- attributes")
         for i = 1, #class.lstAttributes do
             local attribute = class.lstAttributes[i]
-            writer:line(classname .. "." .. attribute)
+            writer:line(lowerClassname .. "." .. attribute)
         end
         writer:line("")
         writer:line("-- methods")
@@ -44,15 +49,15 @@ function generator.generateCode(lstClasses)
             local methodname = class.lstMethods[i]
             local methodargs = {} -- TODO: give this function arguments
             local args = generator.generateArgs(methodargs)
-            writer:line("function " .. class.name .. ":" .. methodname .. "(" .. args .. ")")
+            writer:line("function " .. lowerClassname .. ":" .. methodname .. "(" .. args .. ")")
             writer:line("end")
         end
         writer:line("")
-        writer:line("return " .. class.name)
+        writer:line("return " .. lowerClassname)
         writer:outdent()
         writer:line("end")
         writer:line("")
-        writer:line("return " .. firstToUpper(classname))
+        writer:line("return " .. firstToUpper(Fname))
         -- close file
         writer:close()
     end

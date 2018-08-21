@@ -7,6 +7,7 @@ local function FElement(pX, pY)
     end
 
     function element:draw()
+        if not self.visible then return end
     end
 
     return element

@@ -28,6 +28,7 @@ local function FGroup(pX, pY)
     end
     
     function group:draw()
+        if not self.visible then return end
         self:drawGroup()
     end
 

@@ -2,7 +2,7 @@ local FGroup = require("src.gui.FGroup")
 
 local gui = {}
 
-gui.root = gui.FGroup(0, 0)
+gui.root = FGroup(0, 0)
 love.keyboard.setKeyRepeat(true)
 gui.keyboardstate = {
     buffer = {},
