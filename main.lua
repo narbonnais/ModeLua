@@ -4,24 +4,25 @@ love.graphics.setDefaultFilter("nearest")
 
 local gui = require("gui")
 
-local model = {}
-model.lstClasses = {}
-local classindex = 0
+local uid = 0
+local function UID()
+    uid = uid + 1
+    return uid
+end
+
+lstClasses = {}
 
 local screenw = love.graphics.getWidth()
 local screenh = love.graphics.getHeight()
 
-
-function model.Class(pClassName)
-    local class = {}
-    class.name = pClassName
-
-    return class
-end
-
-function gui.Class(pX, pY, pClassName)
+function gui.Class(pX, pY, pClassName, uid)
     local class = gui.Group(pX, pY)
 
+    -- model
+    class.uid = uid
+    class.lstArgs = {}
+
+    -- view
     class.w = 150
     class.h = 200
 
@@ -96,22 +97,21 @@ end
 local function createClass(pState)
     if pState ~= "begin" then return end
 
-    local classname = "class" .. classindex
-    classindex = classindex + 1
+    local classUID = UID()
+    local classname = "class" .. classUID
 
     -- view
     local mx, my = love.mouse.getPosition()
     local dragdx = 0
     local dragdy = 0
-    local vclass = gui.Class(mx - dragdx, my - dragdy, classname)
-    vclass.isDrag = true
-    vclass.dragdx = dragdx
-    vclass.dragdy = dragdy
-    gui:append(vclass)
-    
-    -- model
-    local mclass = model.Class(classname)
-    table.insert(model.lstClasses, mclass)
+
+    local class = gui.Class(mx - dragdx, my - dragdy, classname, classUID)
+    class.isDrag = true
+    class.dragdx = dragdx
+    class.dragdy = dragdy
+    gui:append(class)
+
+    table.insert(lstClasses, class)
 end
 
 local function firstToUpper(str)
@@ -121,13 +121,20 @@ end
 local function generateCode(pState)
     if pState ~= "begin" then return end
 
-    for _, mclass in pairs(model.lstClasses) do
-        local filename = "gen/" .. mclass.name .. ".lua"
+    for _, class in pairs(lstClasses) do
+        local classname = class.titleLabel.text
+        local filename = "gen/" .. classname .. ".lua"
         -- open file
         local file = io.open(filename, "w+")
         -- write content
-        local classname = mclass.name
-        local args = "arg1, arg2"
+        local args = ""
+        for i = 1, #class.lstArgs do
+            local arg = class.lstArgs[i]
+            args = args .. " " .. arg
+            if i < #class.lstArgs then
+                args = args .. ","
+            end
+        end
         file:write("local function " .. firstToUpper(classname) .. "(" .. args .. ")\n")
         file:write("\t" .. classname .. " = {}\n") -- TODO: if parent == nil then {} else parentclassname
         file:write("\t\n")
