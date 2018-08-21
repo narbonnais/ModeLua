@@ -21,6 +21,24 @@ function gui.Class(pX, pY, pClassName, uid)
     -- model
     class.uid = uid
     class.lstArgs = {}
+    class.lstPrivateMember = {}
+    class.lstPublicMember = {}
+    class.lstPrivateMethod = {}
+    class.lstPublicMethod = {}
+    function class:addMember(pMemberName, pIsPublic)
+        if pIsPublic then
+            table.insert(self.lstPublicMember, pMemberName)
+        else
+            table.insert(self.lstPrivateMember, pMemberName)
+        end
+    end
+    function class:addMethod(pMethodName, pIsPublic)
+        if pIsPublic then
+            table.insert(self.lstPublicMethod, pMethodName)
+        else
+            table.insert(self.lstPrivateMethod, pMethodName)
+        end
+    end
 
     -- view
     class.w = 150
@@ -111,11 +129,87 @@ local function createClass(pState)
     class.dragdy = dragdy
     gui:append(class)
 
+    class:addMember("myPublicMember", true)
+    class:addMember("myPrivateMember", false)
+    class:addMethod("myPublicMethod", true)
+    class:addMethod("myPrivateMethod", false)
+
     table.insert(lstClasses, class)
 end
 
 local function firstToUpper(str)
     return (str:gsub("^%l", string.upper))
+end
+
+local writer = {}
+writer.file = nil
+writer.indents = 0
+function writer:indent()
+    self.indents = self.indents + 1
+end
+function writer:outdent()
+    self.indents = self.indents - 1
+    if self.indents < 0 then
+        self.indents = 0
+    end
+end
+function writer:open(pFilename)
+    if self.file ~= nil then
+        self.file:close()
+        self.file = nil
+    end
+    self.file = io.open(pFilename, "w")
+end
+function writer:line(pLine)
+    local line = ""
+    for i = 0, self.indents - 1 do
+        line = line .. "\t"
+    end
+    line = line .. pLine
+    line = line .. "\n"
+    if self.file ~= nil then
+        self.file:write(line)
+    end
+end
+function writer:close()
+    if self.file ~= nil then
+        self.file:close()
+        self.file = nil
+    end
+end
+
+local function generateArgs(pLstArgs)
+    local args = ""
+    for i = 1, #pLstArgs do
+        local arg = pLstArgs[i]
+        args = args .. " " .. arg
+        if i < #pLstArgs then
+            args = args .. ","
+        end
+    end
+    return args
+end
+
+local function removeFiles()
+    local lfs = require "lfs";
+ 
+    local doc_dir = system.DocumentsDirectory .. "/gen";
+    local doc_path = system.pathForFile("", doc_dir);
+    local resultOK, errorMsg;
+    
+    for file in lfs.dir(doc_path) do
+        local theFile = system.pathForFile(file, doc_dir);
+    
+        if (lfs.attributes(theFile, "mode") ~= "directory") then
+            resultOK, errorMsg = os.remove(theFile);
+    
+            if (resultOK) then
+                print(file.." removed");
+            else
+                print("Error removing file: "..file..":"..errorMsg);
+            end
+        end
+    end 
 end
 
 local function generateCode(pState)
@@ -125,26 +219,53 @@ local function generateCode(pState)
         local classname = class.titleLabel.text
         local filename = "gen/" .. classname .. ".lua"
         -- open file
-        local file = io.open(filename, "w+")
+        writer:open(filename)
         -- write content
-        local args = ""
-        for i = 1, #class.lstArgs do
-            local arg = class.lstArgs[i]
-            args = args .. " " .. arg
-            if i < #class.lstArgs then
-                args = args .. ","
-            end
+        writer:line("-- private attributes")
+        for i = 1, #class.lstPrivateMember do
+            local member = class.lstPrivateMember[i]
+            writer:line("local " .. member)
         end
-        file:write("local function " .. firstToUpper(classname) .. "(" .. args .. ")\n")
-        file:write("\t" .. classname .. " = {}\n") -- TODO: if parent == nil then {} else parentclassname
-        file:write("\t\n")
-        file:write("\treturn " .. classname .. "\n")
-        file:write("end\n")
-        file:write("\n")
-        file:write("return " .. firstToUpper(classname))
+        writer:line("")
+        writer:line("-- private methods")
+        for i = 1, #class.lstPrivateMethod do
+            local methodname = class.lstPrivateMethod[i]
+            local methodargs = {} -- TODO: give this function arguments
+            local args = generateArgs(methodargs)
+            writer:line("local function " .. methodname .. "(" .. args .. ")")
+            writer:line("end")
+        end
+        writer:line("")
+        local args = generateArgs(class.lstArgs)
+        writer:line("local function " .. firstToUpper(classname) .. "(" .. args .. ")")
+        writer:indent()
+        writer:line("local " .. classname .. " = {}") -- TODO: if parent == nil then {} else parentclassname
+        writer:line("")
+        writer:line("-- public attributes")
+        for i = 1, #class.lstPublicMember do
+            local member = class.lstPublicMember[i]
+            writer:line(classname .. "." .. member)
+        end
+        writer:line("")
+        writer:line("-- public methods")
+        for i = 1, #class.lstPublicMethod do
+            local methodname = class.lstPublicMethod[i]
+            local methodargs = {} -- TODO: give this function arguments
+            local args = generateArgs(methodargs)
+            writer:line("function " .. classname .. ":" .. methodname .. "(" .. args .. ")")
+            writer:line("end")
+        end
+        writer:line("")
+        writer:line("return " .. classname)
+        writer:outdent()
+        writer:line("end")
+        writer:line("")
+        writer:line("return " .. firstToUpper(classname))
         -- close file
-        io.close(file)
+        writer:close()
     end
+
+    print("Code generated")
 end
 
 function love.load()
