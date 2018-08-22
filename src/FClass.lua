@@ -72,14 +72,20 @@ local function FTitleEditState(pClass)
             self.class:doTranstition("clickedout")
         end
 
+        -- TODO: give label own writing system
         for i = 1, #keyboardstate.pressed do
             local k = keyboardstate.pressed[i]
 
             if k == "escape" or  k == "return" then
                 self.class:doTranstition("clickedout")
             elseif k == "backspace" then
-                self.title:setText(string.sub(self.title.text, 1, #self.title.text - 1))
-                self.class.name = self.title.text
+                if keyboardstate.ctrl then
+                    self.title:setText("")
+                    self.class.name = ""
+                else
+                    self.title:setText(string.sub(self.title.text, 1, #self.title.text - 1))
+                    self.class.name = self.title.text
+                end
             else
                 self.title:setText(self.title.text .. k)
                 self.class.name = self.title.text
@@ -122,7 +128,11 @@ local function FAttributeEditState(pClass)
             if k == "escape" or  k == "return" then
                 self.class:doTranstition("clickedout")
             elseif k == "backspace" then
-                self.attribute:setText(string.sub(self.attribute.text, 1, #self.attribute.text - 1))
+                if keyboardstate.ctrl then
+                    self.attribute:setText("")
+                else
+                    self.attribute:setText(string.sub(self.attribute.text, 1, #self.attribute.text - 1))
+                end
             else
                 self.attribute:setText(self.attribute.text .. k)
             end
@@ -164,7 +174,11 @@ local function FMethodEditState(pClass)
             if k == "escape" or  k == "return" then
                 self.class:doTranstition("clickedout")
             elseif k == "backspace" then
-                self.method:setText(string.sub(self.method.text, 1, #self.method.text - 1))
+                if keyboardstate.ctrl then
+                    self.method:setText("")
+                else
+                    self.method:setText(string.sub(self.method.text, 1, #self.method.text - 1))
+                end
             else
                 self.method:setText(self.method.text .. k)
             end

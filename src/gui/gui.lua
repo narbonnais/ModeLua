@@ -6,7 +6,10 @@ gui.root = FGroup(0, 0)
 love.keyboard.setKeyRepeat(true)
 gui.keyboardstate = {
     buffer = {},
-    pressed = {}}
+    pressed = {},
+    ctrl = false,
+    shift = false,
+    alt = false}
 gui.mousestate = {
     wasdown = false,
     isdown = false,
@@ -108,8 +111,16 @@ function gui:draw()
 end
 
 function love.keypressed(k)
-    if k == "escape" then love.event.quit() end
+    if k == "escape" then love.event.quit()
+    elseif k == "lctrl" then gui.keyboardstate.ctrl = true
+    end
     gui:keypressed(k)
+end
+
+function love.keyreleased(k)
+    if k == "lctrl" then
+        gui.keyboardstate.ctrl = false
+    end
 end
 
 function love.textinput(t)
