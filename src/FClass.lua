@@ -252,6 +252,10 @@ function FClass(pX, pY)
         return self.methodGroup.bgRect:isHover(mx - self.methodGroup.x, my - self.methodGroup.y)
     end
 
+    function class:isHover(mx, my)
+        return self.bgRect:isHover(mx - self.x, my - self.y)
+    end
+
     -- model view
     class.lstAttributeLabels = {}
     class.lstMethodLabels = {}

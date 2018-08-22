@@ -9,6 +9,9 @@ local FRectangle = require("src.gui.FRectangle")
 local FButton = require("src.gui.FButton")
 local FLabel = require("src.gui.FLabel")
 local FDragLabel = require("src.gui.FDragLabel")
+local FLayerGroup = require("src.FLayerGroup")
+local FRectGroup = require("src.gui.FRectGroup")
+local FCanvas = require("src.FCanvas")
 
 -- window dimension
 local screenw = love.graphics.getWidth()
@@ -19,9 +22,8 @@ local lstClasses = {}
 local state = "default"
 local selected = nil
 
-local frontGroup
-local midGroup
-local backGroup
+local canvas
+local menu
 
 -- adders
 local addClassBtn
@@ -37,14 +39,22 @@ local dragFunctionLabel
     add class :
     called when user drops a dragClassLabel in the canvas
     creates a FClass at the drop position
-    TODO: store classes in a GUI Group instead of a table ?
 ]]
 local function addClass()
     local mx, my = love.mouse.getPosition()
-    local class = FClass(mx, my)
-    class:setPosition(class.x - class.w / 2, class.y - class.h / 2)
-    midGroup:append(class)
-    table.insert(lstClasses, class)
+    local relx = mx - canvas.x
+    local rely = my - canvas.y
+    -- check if cursor overlaps canvas
+    if canvas.bgRect:isHover(relx, rely) then
+        -- check if cursor doesn't overlap other classes
+        if canvas:isAnyClassHover(mx, my) then 
+            return 
+        end
+        -- nothing was overlapped
+        local class = FClass(0, 0) -- set 0, 0, because we position it right after
+        class:setPosition(relx - class.w / 2, rely - class.h / 2)
+        canvas:addClass(class)
+    end
 end
 
 --[[
@@ -54,8 +64,8 @@ end
 ]]
 local function addMethod()
     local mx, my = love.mouse.getPosition()
-    for _, class in pairs(lstClasses) do
-        if class:hoverMethods(mx - class.x, my - class.y) then
+    for _, class in pairs(canvas.lstClasses) do
+        if class:hoverMethods(mx - class.x - canvas.x, my - class.y - canvas.y) then
             class:addMethod()
             break
         end
@@ -70,8 +80,8 @@ end
 ]]
 local function addAttribute()
     local mx, my = love.mouse.getPosition()
-    for _, class in pairs(lstClasses) do
-        if class:hoverAttributes(mx - class.x, my - class.y) then
+    for _, class in pairs(canvas.lstClasses) do
+        if class:hoverAttributes(mx - class.x - canvas.x, my - class.y - canvas.y) then
             class:addAttribute()
             break
         end
@@ -84,7 +94,7 @@ end
     reveal attributes drop zones in the classes
 ]]
 local function toggleAttributeRegions()
-    for _, class in pairs(lstClasses) do
+    for _, class in pairs(canvas.lstClasses) do
         class:toggleAttributeRegion()
     end
 end
@@ -95,13 +105,13 @@ end
     reveal functions drop zones in the classes
 ]]
 local function toggleFunctionRegions()
-    for _, class in pairs(lstClasses) do
+    for _, class in pairs(canvas.lstClasses) do
         class:toggleFunctionRegion()
     end
 end
 
 --[[
-    add class callback :
+    add class cal :
     called when user presses addClassBtn
     reveal the dragClassLabel and attach it to the cursor
 ]]
@@ -121,7 +131,7 @@ local function addClassCB(pState)
 end
 
 --[[
-    add method callback :
+    add method cal :
     called when user presses addFunctionBtn
     reveal the dragFunctionLabel and attach it to the cursor
 ]]
@@ -142,7 +152,7 @@ local function addMethodCB(pState)
 end 
 
 --[[
-    add attribute callback :
+    add attribute cal :
     called when user presses addAttributeBtn
     reveal the dragAttributeLabel and attach it to the cursor
 ]]
@@ -163,14 +173,14 @@ local function addAttributeCB(pState)
 end 
 
 --[[
-    generate callback :
+    generate cal :
     called when user presses generateBtn
     -- TODO: save the current state
     ask generator to write code for each classes in the canvas
 ]]
 local function generateCB(pState)
     if pState == "begin" then
-        generator.generateCode(lstClasses)
+        generator.generateCode(canvas.lstClasses)
     end
 end
 
@@ -182,55 +192,54 @@ end
 function love.load()
     love.graphics.setDefaultFilter("nearest")
 
-    -- create groups with different z-index
-    frontGroup = FGroup(0,0)
-    midGroup = FGroup(0,0)
-    backGroup = FGroup(0,0)
-    gui:append(backGroup)
-    gui:append(midGroup)
-    gui:append(frontGroup)
+    local menuWidth = 180
+
+    -- canvas
+    canvas = FCanvas(menuWidth, 0, screenw - menuWidth, screenh)
+    gui:append(canvas)
+
+    -- menu
+    menu = FRectGroup(0, 0, menuWidth, screenh)
+    gui:append(menu)
 
     -- font that I use
     local mainFont = love.graphics.newFont("assets/Pyxel.ttf", 18)
     love.graphics.setFont(mainFont)
 
     -- menu bar
-    local sideRect = FRectangle(0, 0, 180, screenh)
-    backGroup:append(sideRect)
-
-    local menuLabel = FLabel(0, 0, 180, 50, "Menu bar")
-    backGroup:append(menuLabel)
+    local menuLabel = FLabel(0, 0, menuWidth, 50, "Menu bar")
+    menu:append(menuLabel)
 
     -- adders
     addClassBtn = FButton(20, 50, 140, 70, "Add Class")
     addClassBtn:addEvent("pressed", addClassCB)
-    midGroup:append(addClassBtn)
+    menu:append(addClassBtn)
 
     addAttributeBtn = FButton(20, 50 + 1 * 70 + 1 * 20, 140, 70, "Add Attribute")
     addAttributeBtn:addEvent("pressed", addAttributeCB)
-    midGroup:append(addAttributeBtn)
+    menu:append(addAttributeBtn)
 
     addMethodBtn = FButton(20, 50 + 2 * 70 + 2 * 20, 140, 70, "Add Function")
     addMethodBtn:addEvent("pressed", addMethodCB)
-    midGroup:append(addMethodBtn)
-
-    -- draggers
-    dragClassLabel = FDragLabel(addClassBtn.x, addClassBtn.y, addClassBtn.w, addClassBtn.h, addClassBtn.text)
-    dragClassLabel.visible = false
-    frontGroup:append(dragClassLabel)
-
-    dragFunctionLabel = FDragLabel(addMethodBtn.x, addMethodBtn.y, addMethodBtn.w, addMethodBtn.h, addMethodBtn.text)
-    dragFunctionLabel.visible = false
-    frontGroup:append(dragFunctionLabel)
-
-    dragAttributeLabel = FDragLabel(addAttributeBtn.x, addAttributeBtn.y, addAttributeBtn.w, addAttributeBtn.h, addAttributeBtn.text)
-    dragAttributeLabel.visible = false
-    frontGroup:append(dragAttributeLabel)
+    menu:append(addMethodBtn)
 
     -- generate code
     local generateBtn = FButton(20, screenh - 90, 140, 70, "Generate")
     generateBtn:addEvent("pressed", generateCB)
-    midGroup:append(generateBtn)
+    menu:append(generateBtn)
+
+    -- draggers
+    dragClassLabel = FDragLabel(addClassBtn.x, addClassBtn.y, addClassBtn.w, addClassBtn.h, addClassBtn.text)
+    dragClassLabel.visible = false
+    menu:append(dragClassLabel)
+
+    dragFunctionLabel = FDragLabel(addMethodBtn.x, addMethodBtn.y, addMethodBtn.w, addMethodBtn.h, addMethodBtn.text)
+    dragFunctionLabel.visible = false
+    menu:append(dragFunctionLabel)
+
+    dragAttributeLabel = FDragLabel(addAttributeBtn.x, addAttributeBtn.y, addAttributeBtn.w, addAttributeBtn.h, addAttributeBtn.text)
+    dragAttributeLabel.visible = false
+    menu:append(dragAttributeLabel)
 end
 
 --[[
