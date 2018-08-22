@@ -39,14 +39,14 @@ function generator.generateCode(lstClasses)
         writer:line("local " .. lowerClassname .. " = {}") -- TODO: if parent == nil then {} else parentclassname
         writer:line("")
         writer:line("-- attributes")
-        for i = 1, #class.lstAttributes do
-            local attribute = class.lstAttributes[i]
+        for i = 1, #class.attributeGroup.lstItems do
+            local attribute = class.attributeGroup.lstItems[i].text
             writer:line(lowerClassname .. "." .. attribute)
         end
         writer:line("")
         writer:line("-- methods")
-        for i = 1, #class.lstMethods do
-            local methodname = class.lstMethods[i]
+        for i = 1, #class.methodGroup.lstItems do
+            local methodname = class.methodGroup.lstItems[i].text
             local methodargs = {} -- TODO: give this function arguments
             local args = generator.generateArgs(methodargs)
             writer:line("function " .. lowerClassname .. ":" .. methodname .. "(" .. args .. ")")

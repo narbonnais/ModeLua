@@ -13,12 +13,41 @@ function FLabel(pX, pY, pW, pH, pText)
         self.texth = self.font:getHeight(pText)
     end
 
+    label.edited = false
+    label.blinkTmr = 0.3
+    label.blinkPeriod = 1
+    label.blinckVisible = true
+    function label:toggleBlinkVisible()
+        self.blinckVisible = not self.blinckVisible 
+    end
+
+    function label:updateLabel(dt)
+        if self.edited then
+            self.blinkTmr = self.blinkTmr + dt
+            if self.blinkTmr >= self.blinkPeriod then
+                self.blinkTmr = 0
+                self:toggleBlinkVisible()
+            end
+        end
+    end
+
+    function label:update(dt, mx, my, mousestate)
+        self:updateLabel(dt)
+    end
+
     function label:drawLabel() 
         love.graphics.push()
         love.graphics.setFont(self.font)
         local x = self.x + (self.w - self.textw) / 2
         local y = self.y + (self.h - self.texth) / 2
         love.graphics.print(self.text, x, y)
+        if self.edited then
+            if self.blinckVisible then
+                love.graphics.line(
+                    x + self.textw, y,
+                    x + self.textw, y + self.texth)
+            end
+        end
         love.graphics.pop()
     end
 
