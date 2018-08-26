@@ -245,11 +245,11 @@ function FClass(pX, pY)
 
     -- hovering
     function class:hoverAttributes(mx, my)
-        return self.attributeGroup.bgRect:isHover(mx - self.attributeGroup.x, my - self.attributeGroup.y)
+        return self.attributeGroup.bgRect:isHover(mx - self.x - self.attributeGroup.x, my - self.y - self.attributeGroup.y)
     end
 
     function class:hoverMethods(mx, my)
-        return self.methodGroup.bgRect:isHover(mx - self.methodGroup.x, my - self.methodGroup.y)
+        return self.methodGroup.bgRect:isHover(mx - self.x - self.methodGroup.x, my - self.y - self.methodGroup.y)
     end
 
     function class:isHover(mx, my)
@@ -302,7 +302,7 @@ function FClass(pX, pY)
     function class:doTranstition(pEvent, pParams)
         for _, transition in pairs(transitions) do
             if transition.from == self.currentStateName and transition.event == pEvent then
-                print("Transition from " .. transition.from .. " to " .. transition.to .. " with event " .. pEvent)
+                --print("Transition from " .. transition.from .. " to " .. transition.to .. " with event " .. pEvent)
                 self.currentState:onExit(pParams)
                 self.currentStateName = transition.to
                 self.currentState = self.states[self.currentStateName]
@@ -311,7 +311,7 @@ function FClass(pX, pY)
             end
         end
 
-        print("No transition found with event : " .. pEvent)
+        --print("No transition found with event : " .. pEvent)
     end
 
     function class:updateClass(dt, mx, my, mousestate, keyboardstate)

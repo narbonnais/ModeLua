@@ -16,6 +16,8 @@ local FCanvas = require("src.FCanvas")
 -- window dimension
 local screenw = love.graphics.getWidth()
 local screenh = love.graphics.getHeight()
+-- TODO: Minimap
+-- TODO: scroll canvas
 
 -- scene params
 local lstClasses = {}
@@ -24,6 +26,7 @@ local selected = nil
 
 local canvas
 local menu
+local classMenu
 
 -- adders
 local addClassBtn
@@ -51,9 +54,7 @@ local function addClass()
             return 
         end
         -- nothing was overlapped
-        local class = FClass(0, 0) -- set 0, 0, because we position it right after
-        class:setPosition(relx - class.w / 2, rely - class.h / 2)
-        canvas:addClass(class)
+        canvas:addClass(mx, my)
     end
 end
 
@@ -64,12 +65,7 @@ end
 ]]
 local function addMethod()
     local mx, my = love.mouse.getPosition()
-    for _, class in pairs(canvas.lstClasses) do
-        if class:hoverMethods(mx - class.x - canvas.x, my - class.y - canvas.y) then
-            class:addMethod()
-            break
-        end
-    end
+    canvas:addMethod(mx, my)
 end
 
 
@@ -80,12 +76,7 @@ end
 ]]
 local function addAttribute()
     local mx, my = love.mouse.getPosition()
-    for _, class in pairs(canvas.lstClasses) do
-        if class:hoverAttributes(mx - class.x - canvas.x, my - class.y - canvas.y) then
-            class:addAttribute()
-            break
-        end
-    end
+    canvas:addAttribute(mx, my)
 end
 
 --[[
@@ -193,10 +184,15 @@ function love.load()
     love.graphics.setDefaultFilter("nearest")
 
     local menuWidth = 180
+    local infoMenuWidth = 180
 
     -- canvas
-    canvas = FCanvas(menuWidth, 0, screenw - menuWidth, screenh)
+    canvas = FCanvas(menuWidth, 0, screenw - menuWidth - infoMenuWidth, screenh)
     gui:append(canvas)
+
+    -- class menu
+    classMenu = FRectGroup(screenw - infoMenuWidth, 0, infoMenuWidth, screenh)
+    gui:append(classMenu)
 
     -- menu
     menu = FRectGroup(0, 0, menuWidth, screenh)
@@ -240,6 +236,10 @@ function love.load()
     dragAttributeLabel = FDragLabel(addAttributeBtn.x, addAttributeBtn.y, addAttributeBtn.w, addAttributeBtn.h, addAttributeBtn.text)
     dragAttributeLabel.visible = false
     menu:append(dragAttributeLabel)
+
+    -- class menu
+    local classMenuLabel = FLabel(0, 0, infoMenuWidth, 50, "Class Config")
+    classMenu:append(classMenuLabel)
 end
 
 --[[
